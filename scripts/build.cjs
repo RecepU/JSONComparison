@@ -1,0 +1,13 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const { execFileSync } = require('node:child_process');
+const root = path.resolve(__dirname, '..');
+const src = path.join(root, 'src');
+const dist = path.join(root, 'dist');
+execFileSync(process.execPath, ['--check', path.join(src, 'app.js')], { stdio: 'inherit' });
+const html = fs.readFileSync(path.join(src, 'index.html'), 'utf8');
+if (!html.includes('<script src="app.js"></script>')) throw new Error('Expected a relative app.js asset path.');
+fs.mkdirSync(dist, { recursive: true });
+for (const file of ['index.html', 'app.js']) fs.copyFileSync(path.join(src, file), path.join(dist, file));
+fs.writeFileSync(path.join(dist, '.nojekyll'), '');
+console.log('Production build ready in dist/ (relative assets support /JSONComparison/).');
